@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>风控策略配置</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f5f8;
+      color: #111827;
+    }
+    .page {
+      padding: 24px 32px;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .sub-title {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+      margin-right: 8px;
+    }
+    .btn-primary {
+      background: #4f46e5;
+      color: #fff;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px 24px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+      margin-bottom: 16px;
+    }
+    .steps {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #6b7280;
+    }
+    .step.active {
+      color: #4f46e5;
+      font-weight: 600;
+    }
+    .step-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      background: #fff;
+    }
+    .step.active .step-dot {
+      border-color: #4f46e5;
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 12px 0 8px;
+    }
+    .section-desc {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 20px;
+    }
+    .form-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+    }
+    label span.required {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+    input[type="text"],
+    select,
+    textarea {
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      padding: 6px 8px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #fff;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.35);
+    }
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font-size: 13px;
+    }
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .divider {
+      border-top: 1px solid #e5e7eb;
+      margin: 16px 0;
+    }
+    .table-header,
+    .table-row {
+      display: grid;
+      grid-template-columns: 160px 150px 120px 120px 1fr 60px;
+      padding: 6px 8px;
+      font-size: 12px;
+      align-items: center;
+    }
+    .table-header {
+      background: #f9fafb;
+      color: #6b7280;
+      border-radius: 6px;
+    }
+    .table-row {
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+    .link-btn {
+      background: transparent;
+      border: none;
+      color: #4f46e5;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .risk-blocks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .risk-card {
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+    .risk-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .badge-high {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+    .badge-mid {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge-low {
+      background: #e0f2fe;
+      color: #075985;
+    }
+    .risk-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin: 6px 0;
+    }
+    .risk-actions label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .muted {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <div>
+        <div class="title">策略配置</div>
+        <div class="sub-title">用于配置不同平台/店铺下的侵权、色情、敏感内容风控策略</div>
+      </div>
+      <div>
+        <button class="btn btn-secondary">取消</button>
+        <button class="btn btn-primary">保存草稿</button>
+        <button class="btn btn-primary">发布生效</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="steps">
+        <div class="step active">
+          <div class="step-dot">1</div>
+          <div>基础信息</div>
+        </div>
+        <div class="step active">
+          <div class="step-dot">2</div>
+          <div>检测维度与阈值</div>
+        </div>
+        <div class="step active">
+          <div class="step-dot">3</div>
+          <div>风险动作</div>
+        </div>
+        <div class="step active">
+          <div class="step-dot">4</div>
+          <div>生效范围</div>
+        </div>
+      </div>
+
+      <div class="section-title">基础信息</div>
+      <div class="section-desc">配置策略名称、适用平台/店铺以及内容类型，方便后续筛选和复用。</div>
+      <div class="form-grid">
+        <div class="form-item">
+          <label>策略名称<span class="required">*</span></label>
+          <input type="text" placeholder="例如：Amazon-全店-侵权策略-默认" />
+        </div>
+        <div class="form-item">
+          <label>场景<span class="required">*</span></label>
+          <select>
+            <option>侵权识别</option>
+            <option>色情低俗</option>
+            <option>敏感内容</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>适用平台<span class="required">*</span></label>
+          <select>
+            <option>全部平台</option>
+            <option>Amazon</option>
+            <option>TikTok</option>
+            <option>独立站</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>适用店铺</label>
+          <select>
+            <option>全部店铺</option>
+            <option>店铺 A</option>
+            <option>店铺 B</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>适用内容类型<span class="required">*</span></label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" checked /> 商品</label>
+            <label><input type="checkbox" checked /> 广告</label>
+            <label><input type="checkbox" /> 素材库</label>
+          </div>
+        </div>
+        <div class="form-item">
+          <label>描述</label>
+          <textarea placeholder="例如：Amazon 全店侵权兜底策略，用于新品上架前自查和日常巡检。"></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">检测维度与阈值</div>
+      <div class="section-desc">
+        配置每个检测维度对应的模型通道及高/中/低风险分数阈值，不同场景可使用不同组合。
+      </div>
+      <button class="btn btn-secondary" style="margin-bottom:8px;">+ 添加检测维度</button>
+
+      <div class="table-header">
+        <div>检测维度</div>
+        <div>模型/通道</div>
+        <div>高风险阈值</div>
+        <div>中风险阈值</div>
+        <div>说明</div>
+        <div></div>
+      </div>
+      <div class="table-row">
+        <div>品牌 Logo 侵权</div>
+        <div>多模态模型 A</div>
+        <div><input type="text" value="≥ 0.80" /></div>
+        <div><input type="text" value="0.50 ~ 0.80" /></div>
+        <div class="muted">疑似命中品牌 Logo 或极高相似度</div>
+        <div><button class="link-btn">删除</button></div>
+      </div>
+      <div class="table-row">
+        <div>图像敏感内容</div>
+        <div>图像模型 B</div>
+        <div><input type="text" value="≥ 0.85" /></div>
+        <div><input type="text" value="0.60 ~ 0.85" /></div>
+        <div class="muted">涉黄/暴力图像</div>
+        <div><button class="link-btn">删除</button></div>
+      </div>
+      <div class="table-row">
+        <div>文本敏感词</div>
+        <div>文本模型 C</div>
+        <div><input type="text" value="≥ 0.75" /></div>
+        <div><input type="text" value="0.40 ~ 0.75" /></div>
+        <div class="muted">涉政/仇恨/违法表述</div>
+        <div><button class="link-btn">删除</button></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">风险动作</div>
+      <div class="section-desc">
+        为不同风险等级配置系统动作，例如拦截、生成告警或仅打标，并可选择是否触发 Webhook 回调。
+      </div>
+
+      <div class="risk-blocks">
+        <div class="risk-card">
+          <div class="risk-title">
+            高风险
+            <span class="tag badge-high">High</span>
+          </div>
+          <div class="risk-actions">
+            <label><input type="checkbox" checked /> 拦截（禁止自动通过）</label>
+            <label><input type="checkbox" checked /> 生成告警记录</label>
+            <label><input type="checkbox" /> 触发 Webhook 回调</label>
+          </div>
+          <div class="form-item">
+            <label>处理建议</label>
+            <textarea placeholder="建议立即下架商品/广告，并由人工复核。"></textarea>
+          </div>
+        </div>
+
+        <div class="risk-card">
+          <div class="risk-title">
+            中风险
+            <span class="tag badge-mid">Medium</span>
+          </div>
+          <div class="risk-actions">
+            <label><input type="checkbox" /> 拦截（可选）</label>
+            <label><input type="checkbox" checked /> 生成告警记录</label>
+            <label><input type="checkbox" /> 触发 Webhook 回调</label>
+          </div>
+          <div class="form-item">
+            <label>处理建议</label>
+            <textarea placeholder="进入告警中心，由运营批量处理。"></textarea>
+          </div>
+        </div>
+
+        <div class="risk-card">
+          <div class="risk-title">
+            低风险
+            <span class="tag badge-low">Low</span>
+          </div>
+          <div class="risk-actions">
+            <label><input type="checkbox" checked /> 仅打标（不阻塞业务）</label>
+            <label><input type="checkbox" /> 生成告警记录</label>
+          </div>
+          <div class="form-item">
+            <label>处理建议</label>
+            <textarea placeholder="用于统计与策略优化，一般不需要立即处理。"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="section-title">生效范围与版本</div>
+      <div class="section-desc">
+        设置策略版本、生效时间以及与同范围已有策略的冲突处理方式。
+      </div>
+      <div class="form-grid">
+        <div class="form-item">
+          <label>策略版本号</label>
+          <input type="text" value="v1.0.0" disabled />
+        </div>
+        <div class="form-item">
+          <label>生效时间<span class="required">*</span></label>
+          <select>
+            <option>立即生效</option>
+            <option>定时生效</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label>冲突处理策略</label>
+          <select>
+            <option>新策略覆盖同范围旧策略</option>
+            <option>有同范围策略时禁止发布</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span class="muted" style="margin-right:auto;">提示：每个「平台/店铺 + 场景 + 内容类型」同一时间仅允许一个生效策略。</span>
+        <button class="btn btn-secondary">取消</button>
+        <button class="btn btn-secondary">保存草稿</button>
+        <button class="btn btn-primary">发布生效</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

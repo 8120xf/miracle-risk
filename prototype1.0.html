@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 风控 SaaS - 高保真原型</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #4F46E5;
+  --primary-light: #EEF2FF;
+  --danger: #DC2626;
+  --danger-light: #FEF2F2;
+  --warning: #F59E0B;
+  --warning-light: #FFFBEB;
+  --success: #10B981;
+  --success-light: #ECFDF5;
+  --gray-50: #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+  --sidebar-w: 220px;
+  --header-h: 56px;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: var(--gray-50); color: var(--gray-800); font-size: 14px; line-height: 1.5; }
+
+/* Sidebar */
+.sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: var(--gray-900); color: #fff; z-index: 100; display: flex; flex-direction: column; }
+.sidebar-logo { padding: 16px 20px; font-size: 16px; font-weight: 700; border-bottom: 1px solid var(--gray-700); display: flex; align-items: center; gap: 10px; height: var(--header-h); }
+.sidebar-logo .logo-icon { width: 28px; height: 28px; background: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-group { margin-bottom: 8px; }
+.nav-group-title { padding: 8px 20px 4px; font-size: 11px; text-transform: uppercase; color: var(--gray-400); letter-spacing: .5px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; color: var(--gray-300); cursor: pointer; transition: all .15s; font-size: 13.5px; }
+.nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+.nav-item.active { background: rgba(79,70,229,.3); color: #fff; border-right: 3px solid var(--primary); }
+.nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.sidebar-footer { padding: 12px 20px; border-top: 1px solid var(--gray-700); }
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; }
+.user-name { font-size: 13px; }
+.user-role { font-size: 11px; color: var(--gray-400); }
+
+/* Main */
+.main { margin-left: var(--sidebar-w); min-height: 100vh; }
+.header { height: var(--header-h); background: #fff; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; color: var(--gray-500); font-size: 13px; }
+.breadcrumb span { color: var(--gray-800); font-weight: 500; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.balance-badge { background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.content { padding: 24px; }
+
+/* Page views */
+.page { display: none; }
+.page.active { display: block; }
+
+/* Cards */
+.card { background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow); }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; }
+.card-header h3 { font-size: 15px; font-weight: 600; }
+.card-body { padding: 20px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 6px; font-size: 13.5px; font-weight: 500; border: none; cursor: pointer; transition: all .15s; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: #4338CA; }
+.btn-outline { background: #fff; color: var(--gray-700); border: 1px solid var(--gray-300); }
+.btn-outline:hover { background: var(--gray-50); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-sm { padding: 5px 10px; font-size: 12.5px; }
+.btn-lg { padding: 10px 24px; font-size: 14px; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; }
+.badge-high { background: var(--danger-light); color: var(--danger); }
+.badge-medium { background: var(--warning-light); color: #B45309; }
+.badge-low { background: var(--success-light); color: #059669; }
+.badge-pending { background: var(--gray-100); color: var(--gray-600); }
+.badge-resolved { background: var(--success-light); color: #059669; }
+.badge-fp { background: var(--gray-100); color: var(--gray-500); }
+
+/* Tabs */
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--gray-200); margin-bottom: 20px; }
+.tab { padding: 10px 20px; font-size: 14px; color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s; }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; }
+.tab:hover { color: var(--gray-700); }
+
+/* Forms */
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 13px; font-weight: 500; color: var(--gray-700); margin-bottom: 6px; }
+.form-input, .form-select { width: 100%; padding: 8px 12px; border: 1px solid var(--gray-300); border-radius: 6px; font-size: 13.5px; color: var(--gray-800); background: #fff; outline: none; transition: border-color .15s; }
+.form-input:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+/* Upload area */
+.upload-area { border: 2px dashed var(--gray-300); border-radius: var(--radius); padding: 40px; text-align: center; cursor: pointer; transition: all .15s; }
+.upload-area:hover { border-color: var(--primary); background: var(--primary-light); }
+.upload-icon { font-size: 36px; color: var(--gray-400); margin-bottom: 8px; }
+.upload-text { color: var(--gray-500); font-size: 13px; }
+.upload-text strong { color: var(--primary); }
+
+/* Table */
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th { padding: 10px 14px; text-align: left; font-size: 12px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: .3px; background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+tbody td { padding: 12px 14px; border-bottom: 1px solid var(--gray-100); font-size: 13.5px; vertical-align: middle; }
+tbody tr:hover { background: var(--gray-50); }
+.table-thumb { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; background: var(--gray-200); display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 10px; }
+.table-actions { display: flex; gap: 8px; }
+
+/* Filters */
+.filters { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.filters .form-select { width: auto; min-width: 120px; padding: 6px 10px; font-size: 13px; }
+.search-box { position: relative; }
+.search-box input { padding: 6px 12px 6px 32px; width: 240px; }
+.search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--gray-400); }
+
+/* Stat cards */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 16px 20px; }
+.stat-label { font-size: 12.5px; color: var(--gray-500); margin-bottom: 4px; }
+.stat-value { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+.stat-change { font-size: 12px; margin-top: 4px; }
+.stat-change.up { color: var(--danger); }
+.stat-change.down { color: var(--success); }
+
+/* Detail page */
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.image-preview { position: relative; background: var(--gray-100); border-radius: var(--radius); overflow: hidden; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.image-preview .placeholder { color: var(--gray-400); font-size: 13px; text-align: center; }
+.hit-box { position: absolute; border: 2px solid var(--danger); border-radius: 2px; }
+.hit-box.logo { border-color: var(--danger); }
+.hit-box.similar { border-color: var(--warning); }
+.hit-box-label { position: absolute; top: -18px; left: 0; font-size: 10px; padding: 1px 6px; border-radius: 2px; color: #fff; white-space: nowrap; }
+.hit-box.logo .hit-box-label { background: var(--danger); }
+.hit-box.similar .hit-box-label { background: var(--warning); }
+
+/* Hit list */
+.hit-item { padding: 14px 16px; border: 1px solid var(--gray-200); border-radius: var(--radius); margin-bottom: 10px; }
+.hit-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.hit-type { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.hit-type.logo { background: #FEE2E2; color: var(--danger); }
+.hit-type.similar { background: #FEF3C7; color: #92400E; }
+.hit-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 13px; }
+.hit-field-label { color: var(--gray-500); }
+.hit-field-value { color: var(--gray-800); font-weight: 500; }
+
+/* Suggestion panel */
+.suggestion-step { border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.step-number { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.step-title { font-size: 14px; font-weight: 600; }
+.step-cost { margin-left: auto; font-size: 12px; color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 10px; }
+.suggestion-item { padding: 10px 14px; background: var(--gray-50); border-radius: 6px; margin-bottom: 8px; font-size: 13px; }
+.suggestion-area { display: inline-block; background: var(--danger-light); color: var(--danger); padding: 1px 6px; border-radius: 4px; font-size: 12px; margin-right: 6px; }
+
+/* Compare images */
+.compare-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.compare-arrow { font-size: 20px; color: var(--gray-400); }
+.compare-img { background: var(--gray-100); border-radius: var(--radius); aspect-ratio: 1; display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px; border: 1px solid var(--gray-200); }
+.compare-label { text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 6px; }
+
+/* Billing */
+.package-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.package-card { border: 2px solid var(--gray-200); border-radius: var(--radius); padding: 20px; text-align: center; cursor: pointer; transition: all .15s; }
+.package-card:hover { border-color: var(--primary); }
+.package-card.selected { border-color: var(--primary); background: var(--primary-light); }
+.package-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.package-points { font-size: 24px; font-weight: 700; color: var(--primary); margin: 8px 0; }
+.package-points span { font-size: 14px; font-weight: 400; }
+.package-price { font-size: 18px; font-weight: 600; color: var(--gray-800); }
+.package-unit { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+.package-tag { display: inline-block; background: var(--warning); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-bottom: 8px; }
+
+/* Chart placeholder */
+.chart-placeholder { height: 200px; background: linear-gradient(135deg, var(--primary-light) 0%, var(--gray-50) 100%); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 13px; border: 1px solid var(--gray-200); }
+
+/* Generate page */
+.gen-config { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.style-options { display: flex; gap: 12px; }
+.style-option { padding: 10px 20px; border: 2px solid var(--gray-200); border-radius: 6px; cursor: pointer; text-align: center; font-size: 13px; transition: all .15s; }
+.style-option:hover { border-color: var(--gray-400); }
+.style-option.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+.gen-results { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.gen-result-card { border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
+.gen-result-img { aspect-ratio: 1; background: var(--gray-100); display: flex; align-items: center; justify-content: center; color: var(--gray-400); font-size: 12px; }
+.gen-result-footer { padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; }
+
+/* Pagination */
+.pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gray-100); }
+.pagination-info { font-size: 13px; color: var(--gray-500); }
+.pagination-btns { display: flex; gap: 4px; }
+.page-btn { width: 32px; height: 32px; border: 1px solid var(--gray-200); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; background: #fff; }
+.page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: #fff; border-radius: 12px; width: 560px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; }
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-close { width: 28px; height: 28px; border-radius: 6px; border: none; background: none; cursor: pointer; font-size: 18px; color: var(--gray-400); display: flex; align-items: center; justify-content: center; }
+.modal-close:hover { background: var(--gray-100); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 16px 20px; border-top: 1px solid var(--gray-200); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Status bar */
+.status-bar { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: var(--gray-50); border-radius: var(--radius); margin-bottom: 16px; }
+.status-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gray-600); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-dot.pending { background: var(--gray-400); }
+.status-dot.resolved { background: var(--success); }
+.status-dot.fp { background: var(--gray-800); }
+
+/* Action bar */
+.action-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); margin-top: 16px; }
+
+/* Radio / checkbox styling */
+.radio-group { display: flex; gap: 12px; }
+.radio-option { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--gray-300); border-radius: 6px; cursor: pointer; font-size: 13px; }
+.radio-option.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+
+/* Payment methods */
+.payment-methods { display: flex; gap: 12px; margin-top: 12px; }
+.payment-method { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid var(--gray-200); border-radius: 6px; cursor: pointer; font-size: 13px; }
+.payment-method.active { border-color: var(--primary); background: var(--primary-light); }
+
+/* Feedback form */
+.feedback-section { padding: 16px; border: 1px solid var(--warning); border-radius: var(--radius); background: var(--warning-light); }
+
+/* Responsive grid helpers */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.text-center { text-align: center; }
+.text-gray { color: var(--gray-500); }
+.text-sm { font-size: 12.5px; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.inline-flex { display: inline-flex; align-items: center; }
+
+@keyframes loading {
+  0% { width: 10%; }
+  50% { width: 80%; }
+  100% { width: 10%; }
+}
+.btn-lg { padding: 10px 24px; font-size: 14px; }
+.badge-resolved { background: #ecfdf5; color: #059669; }
+.success-light { background: #ecfdf5; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">AI</div>
+    AI 风控 SaaS
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-title">检测能力</div>
+      <div class="nav-item active" onclick="showPage('detect')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        侵权识别
+      </div>
+      <div class="nav-item" onclick="showPage('records')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        检测记录
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">生成能力</div>
+      <div class="nav-item" onclick="showPage('generate')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        图片生成
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">商业化</div>
+      <div class="nav-item" onclick="showPage('billing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        计费中心
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">设置</div>
+      <div class="nav-item" onclick="showPage('team')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        团队管理
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar">张</div>
+      <div>
+        <div class="user-name">张运营</div>
+        <div class="user-role">管理员</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main">
+  <header class="header">
+    <div class="header-left">
+      <div class="breadcrumb" id="breadcrumb">检测能力 / <span>侵权识别</span></div>
+    </div>
+    <div class="header-right">
+      <div class="balance-badge">余额：3,542 点</div>
+      <button class="btn btn-primary btn-sm" onclick="showModal('recharge')">充值</button>
+    </div>
+  </header>
+
+  <!-- ========== PAGE: 侵权识别 ========== -->
+  <div class="content">
+    <div class="page active" id="page-detect">
+      <div class="card mb-24">
+        <div class="card-header">
+          <h3>侵权识别</h3>
+          <div class="form-row" style="width: auto;">
+            <select class="form-select" style="width: 180px;">
+              <option>Amazon - 店铺A</option>
+              <option>Shopify - 主站</option>
+              <option>TikTok Shop</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="tabs" id="input-tabs">
+            <div class="tab active" onclick="switchInputMode('upload')">上传图片</div>
+            <div class="tab" onclick="switchInputMode('url')">商品页链接</div>
+          </div>
+
+          <div id="input-upload">
+            <div class="upload-area">
+              <div class="upload-icon">📁</div>
+              <div class="upload-text">
+                <strong>拖拽上传图片</strong> 或点击选择文件<br>
+                支持 JPG / PNG / WEBP，单张 ≤ 10MB，批量 ≤ 20 张<br>
+                也可直接粘贴图片 URL（每行一个）
+              </div>
+            </div>
+            <div style="text-align: center; margin-top: 16px;">
+              <button class="btn btn-primary btn-lg">开始检测</button>
+              <div class="text-sm text-gray mt-12">系统自动执行 Logo + 相似图双维度检测，每张消耗 1 点</div>
+            </div>
+          </div>
+
+          <div id="input-url" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">商品页 URL</label>
+              <div style="display: flex; gap: 10px;">
+                <input class="form-input" placeholder="https://www.amazon.com/dp/B0XXXXX" style="flex:1;">
+                <button class="btn btn-outline">解析图片</button>
+              </div>
+              <div class="text-sm text-gray mt-12">支持 Amazon / Shopify / TikTok Shop 等平台商品页链接，系统自动提取商品图</div>
+            </div>
+            <div class="card" style="border-style: dashed; margin-top: 16px;">
+              <div class="card-body" style="text-align: center; color: var(--gray-400); padding: 32px;">
+                输入商品页链接并点击"解析图片"后，提取到的商品图将在此处展示
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detection results (shown after detect) -->
+      <div class="card">
+        <div class="card-header">
+          <h3>检测结果</h3>
+          <div class="filters" style="margin-bottom:0;">
+            <select class="form-select" style="width:100px;"><option>全部风险</option><option>高风险</option><option>中风险</option><option>低风险</option></select>
+            <select class="form-select" style="width:100px;"><option>全部状态</option><option>待处理</option><option>已处理</option><option>误报</option></select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:32px;"><input type="checkbox"></th>
+                  <th>缩略图</th>
+                  <th>文件名</th>
+                  <th>风险等级</th>
+                  <th>品牌名</th>
+                  <th>相似度</th>
+                  <th>处理状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><div class="table-thumb">IMG</div></td>
+                  <td>product-main-01.jpg</td>
+                  <td><span class="badge badge-high">高风险</span></td>
+                  <td>Nike</td>
+                  <td><strong>0.92</strong></td>
+                  <td><span class="badge badge-pending">待处理</span></td>
+                  <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><div class="table-thumb">IMG</div></td>
+                  <td>product-side-02.png</td>
+                  <td><span class="badge badge-medium">中风险</span></td>
+                  <td>Gucci</td>
+                  <td><strong>0.72</strong></td>
+                  <td><span class="badge badge-pending">待处理</span></td>
+                  <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><div class="table-thumb">IMG</div></td>
+                  <td>product-back-03.jpg</td>
+                  <td><span class="badge badge-low">低风险</span></td>
+                  <td>—</td>
+                  <td>0.12</td>
+                  <td><span class="badge badge-resolved">已处理</span></td>
+                  <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><div class="table-thumb">IMG</div></td>
+                  <td>banner-hero-04.png</td>
+                  <td><span class="badge badge-high">高风险</span></td>
+                  <td>LV</td>
+                  <td><strong>0.88</strong></td>
+                  <td><span class="badge badge-fp">误报</span></td>
+                  <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+                </tr>
+                <tr>
+                  <td><input type="checkbox"></td>
+                  <td><div class="table-thumb">IMG</div></td>
+                  <td>lifestyle-05.jpg</td>
+                  <td><span class="badge badge-medium">中风险</span></td>
+                  <td>Puma</td>
+                  <td><strong>0.65</strong></td>
+                  <td><span class="badge badge-pending">待处理</span></td>
+                  <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="action-bar">
+            <span class="text-sm text-gray">已选 0 项</span>
+            <button class="btn btn-outline btn-sm">批量标记已处理</button>
+            <button class="btn btn-outline btn-sm">批量标记误报</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 检测记录 ========== -->
+    <div class="page" id="page-records">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">总检测图片</div><div class="stat-value">1,286</div><div class="stat-change up">↑ 12% vs 上月</div></div>
+        <div class="stat-card"><div class="stat-label">高风险</div><div class="stat-value" style="color:var(--danger);">48</div><div class="stat-change">本月</div></div>
+        <div class="stat-card"><div class="stat-label">待处理</div><div class="stat-value" style="color:var(--warning);">23</div><div class="stat-change">需要关注</div></div>
+        <div class="stat-card"><div class="stat-label">处理率</div><div class="stat-value" style="color:var(--success);">96%</div><div class="stat-change down">↑ 3%</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>检测记录</h3>
+          <button class="btn btn-outline btn-sm">导出 CSV</button>
+        </div>
+        <div class="card-body" style="padding: 16px 20px 0;">
+          <div class="filters">
+            <select class="form-select"><option>最近 7 天</option><option>最近 30 天</option><option>最近 90 天</option><option>全部</option></select>
+            <select class="form-select"><option>全部风险</option><option>高风险</option><option>中风险</option><option>低风险</option></select>
+            <select class="form-select"><option>全部状态</option><option>待处理</option><option>已处理</option><option>误报</option></select>
+            <select class="form-select"><option>全部店铺</option><option>Amazon - 店铺A</option><option>Shopify - 主站</option></select>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="form-input" placeholder="搜索图片名称 / 品牌名">
+            </div>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:32px;"><input type="checkbox"></th>
+                <th>缩略图</th>
+                <th>文件名</th>
+                <th>检测时间</th>
+                <th>风险等级</th>
+                <th>品牌名</th>
+                <th>相似度</th>
+                <th>处理状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><div class="table-thumb">IMG</div></td>
+                <td>product-main-01.jpg</td>
+                <td style="color:var(--gray-500);">03-05 14:32</td>
+                <td><span class="badge badge-high">高风险</span></td>
+                <td>Nike</td>
+                <td><strong>0.92</strong></td>
+                <td><span class="badge badge-pending">待处理</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><div class="table-thumb">IMG</div></td>
+                <td>product-side-02.png</td>
+                <td style="color:var(--gray-500);">03-05 14:32</td>
+                <td><span class="badge badge-medium">中风险</span></td>
+                <td>Gucci</td>
+                <td><strong>0.72</strong></td>
+                <td><span class="badge badge-pending">待处理</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><div class="table-thumb">IMG</div></td>
+                <td>hero-banner.jpg</td>
+                <td style="color:var(--gray-500);">03-04 10:15</td>
+                <td><span class="badge badge-low">低风险</span></td>
+                <td>—</td>
+                <td>0.15</td>
+                <td><span class="badge badge-resolved">已处理</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><div class="table-thumb">IMG</div></td>
+                <td>dress-front.png</td>
+                <td style="color:var(--gray-500);">03-01 09:30</td>
+                <td><span class="badge badge-high">高风险</span></td>
+                <td>LV</td>
+                <td><strong>0.88</strong></td>
+                <td><span class="badge badge-resolved">已处理</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><div class="table-thumb">IMG</div></td>
+                <td>sneaker-detail.jpg</td>
+                <td style="color:var(--gray-500);">03-01 09:30</td>
+                <td><span class="badge badge-medium">中风险</span></td>
+                <td>Puma</td>
+                <td><strong>0.65</strong></td>
+                <td><span class="badge badge-fp">误报</span></td>
+                <td><button class="btn btn-outline btn-sm" onclick="showPage('detail')">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding: 0 20px;">
+          <div class="pagination">
+            <div class="pagination-info">共 156 条记录</div>
+            <div class="pagination-btns">
+              <div class="page-btn">‹</div>
+              <div class="page-btn active">1</div>
+              <div class="page-btn">2</div>
+              <div class="page-btn">3</div>
+              <div class="page-btn">...</div>
+              <div class="page-btn">8</div>
+              <div class="page-btn">›</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 检测详情 ========== -->
+    <div class="page" id="page-detail">
+      <div style="margin-bottom: 16px;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('detect')">← 返回检测结果</button>
+      </div>
+
+      <div class="flex-between mb-16">
+        <h2 style="font-size:18px;">检测详情 — product-main-01.jpg</h2>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span class="badge badge-high" style="font-size:14px; padding: 4px 14px;">高风险</span>
+          <span class="badge badge-pending" style="font-size:13px; padding: 4px 12px;">待处理</span>
+        </div>
+      </div>
+
+      <div class="detail-grid">
+        <!-- Left: Image -->
+        <div>
+          <div class="card">
+            <div class="card-header"><h3>原图及标注</h3></div>
+            <div class="card-body" style="padding: 12px;">
+              <div class="image-preview" style="background: #f0f0f0;">
+                <div class="placeholder">商品图预览区<br>(侵权区域红/蓝框标注)</div>
+                <div class="hit-box logo" style="top:10%; left:8%; width:25%; height:18%;">
+                  <div class="hit-box-label">命中1: Nike Logo</div>
+                </div>
+                <div class="hit-box similar" style="top:45%; left:30%; width:40%; height:25%;">
+                  <div class="hit-box-label">命中2: 相似图</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Hit list -->
+        <div>
+          <div class="card mb-16">
+            <div class="card-header"><h3>命中列表</h3><span class="text-sm text-gray">按相似度降序</span></div>
+            <div class="card-body">
+              <div class="hit-item">
+                <div class="hit-item-header">
+                  <span class="hit-type logo">Logo 维度</span>
+                  <span style="font-size: 20px; font-weight: 700; color: var(--danger);">0.92</span>
+                </div>
+                <div class="hit-fields">
+                  <div><span class="hit-field-label">品牌名</span></div>
+                  <div><span class="hit-field-value">Nike</span></div>
+                  <div><span class="hit-field-label">命中样本</span></div>
+                  <div><span class="hit-field-value" style="color:var(--primary); cursor:pointer;">查看品牌库样本图 →</span></div>
+                  <div><span class="hit-field-label">区域坐标</span></div>
+                  <div><span class="hit-field-value">x:23, y:45, w:80, h:60</span></div>
+                  <div><span class="hit-field-label">侵权原因</span></div>
+                  <div><span class="hit-field-value">图片含有 Nike 商标 Logo，与核心品牌库中 Nike 标准 Logo 高度匹配</span></div>
+                  <div><span class="hit-field-label">来源</span></div>
+                  <div><span class="hit-field-value">核心品牌库 (140)</span></div>
+                </div>
+              </div>
+
+              <div class="hit-item">
+                <div class="hit-item-header">
+                  <span class="hit-type similar">相似图维度</span>
+                  <span style="font-size: 20px; font-weight: 700; color: var(--warning);">0.45</span>
+                </div>
+                <div class="hit-fields">
+                  <div><span class="hit-field-label">品牌名</span></div>
+                  <div><span class="hit-field-value">Nike</span></div>
+                  <div><span class="hit-field-label">命中样本</span></div>
+                  <div><span class="hit-field-value" style="color:var(--primary); cursor:pointer;">查看侵权库样本图 →</span></div>
+                  <div><span class="hit-field-label">区域坐标</span></div>
+                  <div><span class="hit-field-value">x:120, y:200, w:150, h:90</span></div>
+                  <div><span class="hit-field-label">侵权原因</span></div>
+                  <div><span class="hit-field-value">图片主体与已知侵权样本构图相似，疑似通过裁剪方式规避检测</span></div>
+                  <div><span class="hit-field-label">来源</span></div>
+                  <div><span class="hit-field-value">侵权参考图库</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Judgment -->
+          <div class="card mb-16">
+            <div class="card-body">
+              <div style="font-size:13.5px; margin-bottom: 12px;">
+                <strong>综合判定：</strong>最高相似度 0.92（Logo 维度），判定为<span style="color:var(--danger); font-weight:600;">高风险</span>
+              </div>
+              <div style="font-size:13.5px; color:var(--gray-600);">
+                <strong>处理建议：</strong>建议移除或替换含有 Nike Logo 的区域
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card">
+            <div class="card-body">
+              <div style="font-weight:600; margin-bottom: 12px; font-size: 13.5px;">处理操作</div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+                <button class="btn btn-primary btn-sm" onclick="showPage('suggestion')">获取改图建议 (1点)</button>
+                <button class="btn btn-primary btn-sm" style="background: #059669;" onclick="showPage('directgen')">生成合规替代图 (1点)</button>
+                <button class="btn btn-outline btn-sm">标记为误报</button>
+              </div>
+              <div style="font-weight:600; margin-bottom: 12px; font-size: 13.5px;">变更状态</div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;">
+                <select class="form-select" style="width: auto;">
+                  <option>标记已处理...</option>
+                  <option>已替换图片</option>
+                  <option>已下架商品</option>
+                  <option>已忽略（风险可接受）</option>
+                </select>
+                <button class="btn btn-success btn-sm">确认</button>
+              </div>
+              <div style="border-top: 1px solid var(--gray-200); padding-top: 12px;">
+                <button class="btn btn-outline btn-sm" style="color: var(--warning); border-color: var(--warning);" onclick="showModal('feedback')">反馈漏报：该图被平台实际处罚</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 改图建议 ========== -->
+    <div class="page" id="page-suggestion">
+      <div style="margin-bottom: 16px;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('detail')">← 返回检测详情</button>
+      </div>
+
+      <h2 style="font-size:18px; margin-bottom: 20px;">改图建议 — product-main-01.jpg</h2>
+
+      <!-- Step 1 -->
+      <div class="suggestion-step">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <div class="step-title">文字改图建议</div>
+          <div class="step-cost">已消耗 1 点</div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <div class="image-preview" style="height: 260px; background: #f0f0f0;">
+              <div class="placeholder">原图 + 侵权区域标注</div>
+              <div class="hit-box logo" style="top:10%; left:8%; width:25%; height:18%;">
+                <div class="hit-box-label">区域1</div>
+              </div>
+              <div class="hit-box similar" style="top:45%; left:30%; width:40%; height:25%;">
+                <div class="hit-box-label">区域2</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="suggestion-item">
+              <span class="suggestion-area">区域1 · 左上角</span>
+              <div style="margin-top: 6px;">移除 Nike Logo，建议用纯色背景或自有品牌 Logo 替代。该区域与核心品牌库中 Nike 标准 Logo 高度匹配（相似度 0.92），<strong>必须修改</strong>。</div>
+            </div>
+            <div class="suggestion-item">
+              <span class="suggestion-area">区域2 · 中部</span>
+              <div style="margin-top: 6px;">中部图案与已知侵权样本构图相似，建议裁剪或用通用素材覆盖。相似度 0.45，风险较低，建议修改以降低潜在风险。</div>
+            </div>
+            <div class="suggestion-item" style="background: var(--primary-light); border: 1px solid rgba(79,70,229,.2);">
+              <strong>整体建议：</strong>优先处理区域1的 Nike Logo，这是被平台处罚的主要风险点。区域2可视情况决定是否修改。调整整体构图以弥补移除区域的空白。
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button class="btn btn-primary" id="gen-alt-btn" onclick="showStep2()">生成替代图（再消耗 1 点）</button>
+          <button class="btn btn-outline" onclick="showPage('detail')">关闭，自行处理</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="suggestion-step" id="step2" style="display: none;">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <div class="step-title">生成替代图</div>
+          <div class="step-cost">已消耗 +1 点</div>
+        </div>
+
+        <div class="compare-grid">
+          <div>
+            <div class="compare-img" style="height: 240px;">原图<br>(标红侵权区域)</div>
+            <div class="compare-label">原图</div>
+          </div>
+          <div class="compare-arrow">→</div>
+          <div>
+            <div class="compare-img" style="height: 240px; border-color: var(--success);">替代图<br>(已移除/替换侵权元素)</div>
+            <div class="compare-label">替代图</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 13px;">替代图安全检测：</span>
+          <span class="badge badge-low" style="font-size: 13px;">✅ 安全</span>
+          <span class="text-sm text-gray">（已通过侵权检测，无命中）</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 16px;">
+          <button class="btn btn-primary">下载替代图</button>
+          <button class="btn btn-outline" onclick="showPage('generate')">基于此生成新图</button>
+          <button class="btn btn-outline">重新生成（1 点）</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 直接生成合规替代图 ========== -->
+    <div class="page" id="page-directgen">
+      <div style="margin-bottom: 16px;">
+        <button class="btn btn-outline btn-sm" onclick="showPage('detail')">← 返回检测详情</button>
+      </div>
+
+      <div class="flex-between mb-16">
+        <h2 style="font-size:18px;">生成合规替代图 — product-main-01.jpg</h2>
+        <div class="step-cost" style="font-size: 13px;">消耗 1 点</div>
+      </div>
+
+      <!-- Loading state -->
+      <div class="card mb-24" id="directgen-loading">
+        <div class="card-body" style="text-align: center; padding: 48px;">
+          <div style="font-size: 36px; margin-bottom: 12px;">⏳</div>
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">正在生成合规替代图...</div>
+          <div class="text-sm text-gray">系统自动分析侵权区域并生成替代图，预计 15-30 秒</div>
+          <div style="margin-top: 20px;">
+            <div style="width: 200px; height: 4px; background: var(--gray-200); border-radius: 2px; margin: 0 auto; overflow: hidden;">
+              <div style="width: 60%; height: 100%; background: var(--primary); border-radius: 2px; animation: loading 2s ease-in-out infinite;"></div>
+            </div>
+          </div>
+          <div class="text-sm text-gray mt-16" style="margin-top: 16px;">
+            检测到 2 处侵权区域，正在移除/替换...
+          </div>
+          <button class="btn btn-outline btn-sm mt-16" style="margin-top: 20px;" onclick="showDirectGenResult()">模拟：显示生成结果</button>
+        </div>
+      </div>
+
+      <!-- Result state -->
+      <div id="directgen-result" style="display: none;">
+        <!-- Compare -->
+        <div class="card mb-24">
+          <div class="card-header">
+            <h3>原图 vs 替代图</h3>
+            <span class="badge badge-low" style="font-size: 13px; padding: 4px 12px;">✅ 替代图已通过侵权检测</span>
+          </div>
+          <div class="card-body">
+            <div class="compare-grid">
+              <div>
+                <div class="image-preview" style="height: 300px; background: #f0f0f0;">
+                  <div class="placeholder">原图</div>
+                  <div class="hit-box logo" style="top:10%; left:8%; width:25%; height:18%;">
+                    <div class="hit-box-label">Nike Logo</div>
+                  </div>
+                  <div class="hit-box similar" style="top:45%; left:30%; width:40%; height:25%;">
+                    <div class="hit-box-label">相似图区域</div>
+                  </div>
+                </div>
+                <div class="compare-label">原图（标注侵权区域）</div>
+              </div>
+              <div class="compare-arrow" style="font-size: 28px;">→</div>
+              <div>
+                <div class="image-preview" style="height: 300px; background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 2px solid var(--success);">
+                  <div class="placeholder" style="color: var(--success);">合规替代图<br><br><span style="font-size: 11px; color: var(--gray-400);">已移除 Nike Logo<br>已替换相似图区域</span></div>
+                </div>
+                <div class="compare-label">替代图（已移除/替换侵权元素）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modification details -->
+        <div class="card mb-24">
+          <div class="card-header"><h3>修改明细</h3></div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div class="suggestion-item">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <span class="suggestion-area">区域1 · 左上角</span>
+                  <span class="badge badge-resolved" style="font-size: 11px;">已处理</span>
+                </div>
+                <div style="font-size: 13px; color: var(--gray-600);">
+                  <strong>操作：</strong>移除 Nike Logo，使用纯色背景填充<br>
+                  <strong>原始相似度：</strong><span style="color: var(--danger);">0.92</span> →
+                  <strong>处理后：</strong><span style="color: var(--success);">0.03</span>
+                </div>
+              </div>
+              <div class="suggestion-item">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <span class="suggestion-area">区域2 · 中部</span>
+                  <span class="badge badge-resolved" style="font-size: 11px;">已处理</span>
+                </div>
+                <div style="font-size: 13px; color: var(--gray-600);">
+                  <strong>操作：</strong>替换相似图案，使用通用素材覆盖<br>
+                  <strong>原始相似度：</strong><span style="color: var(--warning);">0.45</span> →
+                  <strong>处理后：</strong><span style="color: var(--success);">0.08</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Safety check result -->
+        <div class="card mb-24">
+          <div class="card-body" style="display: flex; align-items: center; gap: 16px; padding: 16px 20px;">
+            <div style="width: 40px; height: 40px; background: var(--success-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;">✅</div>
+            <div>
+              <div style="font-weight: 600; font-size: 14px;">安全检测通过</div>
+              <div class="text-sm text-gray">替代图已自动通过侵权检测（Logo + 相似图双维度），无命中项，可安全使用</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display: flex; gap: 12px;">
+          <button class="btn btn-primary btn-lg">下载替代图</button>
+          <button class="btn btn-outline">重新生成（1 点）</button>
+          <button class="btn btn-outline" onclick="showPage('suggestion')">查看详细改图建议</button>
+          <button class="btn btn-outline" onclick="showPage('detail')">返回检测详情</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 图片生成 ========== -->
+    <div class="page" id="page-generate">
+      <div class="card mb-24">
+        <div class="card-header"><h3>合规图片生成</h3></div>
+        <div class="card-body">
+          <div class="gen-config">
+            <div>
+              <div class="form-group">
+                <label class="form-label">商品标题</label>
+                <input class="form-input" placeholder="输入商品标题">
+              </div>
+              <div class="form-group">
+                <label class="form-label">商品类目</label>
+                <select class="form-select">
+                  <option>服装 > 女装 > 连衣裙</option>
+                  <option>鞋靴 > 运动鞋</option>
+                  <option>箱包 > 手提包</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">卖点描述</label>
+                <textarea class="form-input" rows="3" placeholder="描述商品核心卖点"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">参考图（可选，最多 3 张）</label>
+                <div class="upload-area" style="padding: 20px;">
+                  <div class="upload-text"><strong>点击上传</strong>参考图</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="form-group">
+                <label class="form-label">图片风格</label>
+                <div class="style-options">
+                  <div class="style-option active">白底图</div>
+                  <div class="style-option">场景图</div>
+                  <div class="style-option">模特图</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">图片尺寸</label>
+                <select class="form-select">
+                  <option>1200 × 1200</option>
+                  <option>800 × 800</option>
+                  <option>1500 × 1500</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">生成数量</label>
+                <div class="style-options">
+                  <div class="style-option">2 张</div>
+                  <div class="style-option active">4 张</div>
+                  <div class="style-option">6 张</div>
+                </div>
+              </div>
+              <div style="background: var(--primary-light); padding: 14px 16px; border-radius: var(--radius); margin-top: 20px;">
+                <div style="font-size: 13px; color: var(--gray-600);">预计消耗</div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--primary);">4 <span style="font-size: 14px; font-weight: 400;">点</span></div>
+              </div>
+              <button class="btn btn-primary btn-lg" style="width: 100%; margin-top: 16px;">生成图片</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>生成结果</h3><span class="text-sm text-gray">生成时间: 2026-03-05 14:35</span></div>
+        <div class="card-body">
+          <div class="gen-results">
+            <div class="gen-result-card">
+              <div class="gen-result-img">生成图 1</div>
+              <div class="gen-result-footer">
+                <span class="badge badge-low">✅ 安全</span>
+                <input type="checkbox">
+              </div>
+            </div>
+            <div class="gen-result-card">
+              <div class="gen-result-img">生成图 2</div>
+              <div class="gen-result-footer">
+                <span class="badge badge-low">✅ 安全</span>
+                <input type="checkbox">
+              </div>
+            </div>
+            <div class="gen-result-card">
+              <div class="gen-result-img">生成图 3</div>
+              <div class="gen-result-footer">
+                <span class="badge badge-medium">⚠️ 中风险</span>
+                <input type="checkbox">
+              </div>
+            </div>
+            <div class="gen-result-card">
+              <div class="gen-result-img">生成图 4</div>
+              <div class="gen-result-footer">
+                <span class="badge badge-low">✅ 安全</span>
+                <input type="checkbox">
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; margin-top: 16px;">
+            <button class="btn btn-primary">下载选中</button>
+            <button class="btn btn-outline">重新生成</button>
+            <button class="btn btn-outline">查看侵权检测详情</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 计费中心 ========== -->
+    <div class="page" id="page-billing">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">剩余点数</div>
+          <div class="stat-value">3,542</div>
+          <div class="text-sm" style="color:var(--warning); margin-top:4px;">其中体验包: 62 点 (3月25日到期)</div>
+        </div>
+        <div class="stat-card"><div class="stat-label">本月已消耗</div><div class="stat-value">1,458</div></div>
+        <div class="stat-card"><div class="stat-label">余额预警</div><div class="stat-value" style="font-size:16px;">低于 200 点时提醒</div><div class="mt-12"><button class="btn btn-outline btn-sm">设置</button></div></div>
+        <div class="stat-card" style="text-align: center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+          <button class="btn btn-primary btn-lg" onclick="showModal('recharge')">充值</button>
+        </div>
+      </div>
+
+      <div class="card mb-24">
+        <div class="card-header"><h3>消费趋势</h3><span class="text-sm text-gray">近 30 天</span></div>
+        <div class="card-body">
+          <div class="chart-placeholder">📊 消费趋势折线图（近 30 天每日消耗量）</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3>消费明细</h3>
+            <div style="display:flex; gap:8px;">
+              <select class="form-select" style="width:auto;"><option>最近 7 天</option><option>最近 30 天</option></select>
+              <select class="form-select" style="width:auto;"><option>全部类型</option><option>侵权检测</option><option>图片生成</option><option>改图建议</option><option>生成替代图</option></select>
+              <button class="btn btn-outline btn-sm">导出</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>时间</th><th>功能</th><th>消耗</th><th>余额</th></tr></thead>
+              <tbody>
+                <tr><td style="color:var(--gray-500)">03-05 14:32</td><td>侵权检测</td><td style="color:var(--danger)">-5</td><td>3,542</td></tr>
+                <tr><td style="color:var(--gray-500)">03-05 14:35</td><td>图片生成</td><td style="color:var(--danger)">-4</td><td>3,547</td></tr>
+                <tr><td style="color:var(--gray-500)">03-05 15:10</td><td>改图建议</td><td style="color:var(--danger)">-1</td><td>3,551</td></tr>
+                <tr><td style="color:var(--gray-500)">03-05 15:12</td><td>生成替代图</td><td style="color:var(--danger)">-1</td><td>3,552</td></tr>
+                <tr><td style="color:var(--gray-500)">03-04 09:20</td><td>侵权检测</td><td style="color:var(--danger)">-12</td><td>3,553</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h3>购买记录</h3></div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>时间</th><th>套餐</th><th>点数</th><th>金额</th><th>状态</th></tr></thead>
+              <tbody>
+                <tr><td style="color:var(--gray-500)">03-01</td><td>标准包</td><td style="color:var(--success)">+5,000</td><td>¥399</td><td><span class="badge badge-resolved">已到账</span></td></tr>
+                <tr><td style="color:var(--gray-500)">02-01</td><td>基础包</td><td style="color:var(--success)">+1,000</td><td>¥99</td><td><span class="badge badge-resolved">已到账</span></td></tr>
+                <tr><td style="color:var(--gray-500)">01-15</td><td>体验包</td><td style="color:var(--success)">+100</td><td>免费</td><td><span class="badge badge-resolved">已到账</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== PAGE: 团队管理 (placeholder) ========== -->
+    <div class="page" id="page-team">
+      <div class="card">
+        <div class="card-header"><h3>团队管理</h3><button class="btn btn-primary btn-sm">邀请成员</button></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>成员</th><th>邮箱</th><th>角色</th><th>状态</th><th>最近登录</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td><strong>张运营</strong></td><td>zhang@company.com</td><td><span class="badge" style="background:var(--primary-light);color:var(--primary);">管理员</span></td><td><span class="badge badge-resolved">已激活</span></td><td style="color:var(--gray-500)">03-05 14:30</td><td>—</td></tr>
+              <tr><td>李美工</td><td>li@company.com</td><td><span class="badge" style="background:#DBEAFE;color:#1D4ED8;">运营</span></td><td><span class="badge badge-resolved">已激活</span></td><td style="color:var(--gray-500)">03-05 10:15</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);">移除</button></td></tr>
+              <tr><td>王老板</td><td>wang@company.com</td><td><span class="badge" style="background:var(--gray-100);color:var(--gray-600);">只读</span></td><td><span class="badge badge-pending">待激活</span></td><td style="color:var(--gray-500)">—</td><td><button class="btn btn-outline btn-sm">编辑</button> <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);">移除</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: 充值 ========== -->
+<div class="modal-overlay" id="modal-recharge">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>充值点数</h3>
+      <button class="modal-close" onclick="closeModal('recharge')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="package-grid mb-24">
+        <div class="package-card" onclick="selectPackage(this)">
+          <div class="package-name">基础包</div>
+          <div class="package-points">1,000 <span>点</span></div>
+          <div class="package-price">¥99</div>
+          <div class="package-unit">¥0.099 / 点</div>
+        </div>
+        <div class="package-card selected" onclick="selectPackage(this)">
+          <div class="package-tag">推荐</div>
+          <div class="package-name">标准包</div>
+          <div class="package-points">5,000 <span>点</span></div>
+          <div class="package-price">¥399</div>
+          <div class="package-unit">¥0.080 / 点</div>
+        </div>
+        <div class="package-card" onclick="selectPackage(this)">
+          <div class="package-name">专业包</div>
+          <div class="package-points">20,000 <span>点</span></div>
+          <div class="package-price">¥1,299</div>
+          <div class="package-unit">¥0.065 / 点</div>
+        </div>
+        <div class="package-card" onclick="selectPackage(this)">
+          <div class="package-name">企业包</div>
+          <div class="package-points">100,000 <span>点</span></div>
+          <div class="package-price">¥4,999</div>
+          <div class="package-unit">¥0.050 / 点</div>
+        </div>
+      </div>
+
+      <div class="form-label">支付方式</div>
+      <div class="payment-methods">
+        <div class="payment-method active" onclick="selectPayment(this)">💳 支付宝</div>
+        <div class="payment-method" onclick="selectPayment(this)">💬 微信支付</div>
+        <div class="payment-method" onclick="selectPayment(this)">🏦 银行转账</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('recharge')">取消</button>
+      <button class="btn btn-primary btn-lg">确认支付 ¥399</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MODAL: 漏报反馈 ========== -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>反馈漏报</h3>
+      <button class="modal-close" onclick="closeModal('feedback')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background: var(--warning-light); padding: 12px 16px; border-radius: var(--radius); margin-bottom: 20px; font-size: 13px; color: #92400E;">
+        该图之前检测为低风险，但被平台实际处罚。提交反馈后，样本将入库用于模型优化。
+      </div>
+      <div class="form-group">
+        <label class="form-label">处罚平台 *</label>
+        <select class="form-select">
+          <option>请选择</option>
+          <option>Amazon</option>
+          <option>Shopify</option>
+          <option>TikTok Shop</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">处罚类型 *</label>
+        <select class="form-select">
+          <option>请选择</option>
+          <option>商品下架</option>
+          <option>店铺警告</option>
+          <option>扣分</option>
+          <option>其他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">处罚截图（可选）</label>
+        <div class="upload-area" style="padding: 16px;">
+          <div class="upload-text"><strong>点击上传</strong>处罚通知截图</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">补充说明（可选）</label>
+        <textarea class="form-input" rows="3" placeholder="描述处罚详情或其他补充信息"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('feedback')">取消</button>
+      <button class="btn btn-primary">提交反馈</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const breadcrumbMap = {
+  detect: '检测能力 / <span>侵权识别</span>',
+  records: '检测能力 / <span>检测记录</span>',
+  detail: '检测能力 / 检测记录 / <span>检测详情</span>',
+  suggestion: '检测能力 / 检测详情 / <span>改图建议</span>',
+  directgen: '检测能力 / 检测详情 / <span>生成合规替代图</span>',
+  generate: '生成能力 / <span>图片生成</span>',
+  billing: '商业化 / <span>计费中心</span>',
+  team: '设置 / <span>团队管理</span>'
+};
+
+function showPageOriginal(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('breadcrumb').innerHTML = breadcrumbMap[id] || '';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = { detect: 0, records: 1, detail: 1, suggestion: 1, directgen: 1, generate: 2, billing: 3, team: 4 };
+  const idx = navMap[id];
+  if (idx !== undefined) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+}
+
+function switchInputMode(mode) {
+  document.getElementById('input-upload').style.display = mode === 'upload' ? 'block' : 'none';
+  document.getElementById('input-url').style.display = mode === 'url' ? 'block' : 'none';
+  const tabs = document.querySelectorAll('#input-tabs .tab');
+  tabs[0].classList.toggle('active', mode === 'upload');
+  tabs[1].classList.toggle('active', mode === 'url');
+}
+
+function showDirectGenResult() {
+  document.getElementById('directgen-loading').style.display = 'none';
+  document.getElementById('directgen-result').style.display = 'block';
+}
+
+function showPage(id) {
+  if (id === 'directgen') {
+    document.getElementById('directgen-loading').style.display = 'block';
+    document.getElementById('directgen-result').style.display = 'none';
+  }
+  showPageOriginal(id);
+}
+
+
+function showStep2() {
+  document.getElementById('step2').style.display = 'block';
+  document.getElementById('gen-alt-btn').disabled = true;
+  document.getElementById('gen-alt-btn').style.opacity = '.5';
+  document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
+}
+
+function showModal(id) { document.getElementById('modal-' + id).classList.add('show'); }
+function closeModal(id) { document.getElementById('modal-' + id).classList.remove('show'); }
+
+function selectPackage(el) {
+  document.querySelectorAll('.package-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectPayment(el) {
+  document.querySelectorAll('.payment-method').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+document.querySelectorAll('.style-option').forEach(opt => {
+  opt.addEventListener('click', function() {
+    this.parentElement.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>
