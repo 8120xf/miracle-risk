@@ -347,6 +347,7 @@ tbody tr:hover { background: var(--gray-50); }
           <div class="tabs" id="input-tabs">
             <div class="tab active" onclick="switchInputMode('upload')">上传图片</div>
             <div class="tab" onclick="switchInputMode('url')">商品页链接</div>
+            <div class="tab" onclick="switchInputMode('shop')">店铺识别</div>
           </div>
 
           <div id="input-upload">
@@ -358,9 +359,11 @@ tbody tr:hover { background: var(--gray-50); }
                 也可直接粘贴图片 URL（每行一个）
               </div>
             </div>
-            <div style="text-align: center; margin-top: 16px;">
+            <div style="text-align: center; margin-top: 12px;">
               <button class="btn btn-primary btn-lg">开始检测</button>
-              <div class="text-sm text-gray mt-12">系统自动执行 Logo + 相似图双维度检测，每张消耗 1 点</div>
+              <div class="text-sm text-gray mt-12">
+                系统自动执行 Logo + 相似图双维度检测，每张消耗 1 点。<span style="color: var(--gray-400);">（示例：选择 12 张图片时预计共消耗 12 点）</span>
+              </div>
             </div>
           </div>
 
@@ -376,6 +379,24 @@ tbody tr:hover { background: var(--gray-50); }
             <div class="card" style="border-style: dashed; margin-top: 16px;">
               <div class="card-body" style="text-align: center; color: var(--gray-400); padding: 32px;">
                 输入商品页链接并点击"解析图片"后，提取到的商品图将在此处展示
+              </div>
+            </div>
+          </div>
+
+          <div id="input-shop" style="display: none; margin-top: 16px;">
+            <div class="form-group">
+              <label class="form-label">店铺首页 URL</label>
+              <div style="display: flex; gap: 10px;">
+                <input class="form-input" placeholder="https://www.amazon.com/stores/your-shop" style="flex:1;">
+                <button class="btn btn-outline">解析店铺商品</button>
+              </div>
+              <div class="text-sm text-gray mt-12">
+                支持主流平台店铺链接（如 Amazon / Shopify / TikTok Shop 等），系统将解析店铺页中的商品列表并提取商品主图，用于批量侵权识别。
+              </div>
+            </div>
+            <div class="card" style="border-style: dashed; margin-top: 16px;">
+              <div class="card-body" style="text-align: center; color: var(--gray-400); padding: 32px;">
+                输入店铺首页链接并点击「解析店铺商品」后，将在此处展示解析出的商品及其主图概览，确认后可一键发起批量识别。
               </div>
             </div>
           </div>
@@ -1212,9 +1233,12 @@ function showPageOriginal(id) {
 function switchInputMode(mode) {
   document.getElementById('input-upload').style.display = mode === 'upload' ? 'block' : 'none';
   document.getElementById('input-url').style.display = mode === 'url' ? 'block' : 'none';
+  const shop = document.getElementById('input-shop');
+  if (shop) shop.style.display = mode === 'shop' ? 'block' : 'none';
   const tabs = document.querySelectorAll('#input-tabs .tab');
   tabs[0].classList.toggle('active', mode === 'upload');
   tabs[1].classList.toggle('active', mode === 'url');
+  if (tabs[2]) tabs[2].classList.toggle('active', mode === 'shop');
 }
 
 function showDirectGenResult() {
