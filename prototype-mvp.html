@@ -399,10 +399,6 @@
   <main class="main">
     <header class="header">
       <div class="breadcrumb">检测能力 / <span>侵权识别（MVP）</span></div>
-      <div class="header-right">
-        <div class="balance-badge">余额：3,542 点</div>
-        <button class="btn btn-outline">刷新余额</button>
-      </div>
     </header>
 
     <div class="content">
@@ -494,8 +490,8 @@
               <tbody>
                 <tr>
                   <td><input type="checkbox" /></td>
-                  <td><div class="table-thumb thumb-clickable" onclick="openImagePreview('原图预览','原图预览占位')">原图</div></td>
-                  <td><div class="table-thumb thumb-clickable" style="border-color:rgba(34,197,94,.7);" onclick="openImagePreview('修改后图预览','修改后图预览占位')">改后图</div></td>
+                  <td><div class="table-thumb thumb-clickable" onclick="openImagePreview('原图预览','原图预览占位',0,'original')">原图</div></td>
+                  <td><div class="table-thumb thumb-clickable" style="border-color:rgba(34,197,94,.7);" onclick="openImagePreview('修改后图预览','修改后图预览占位',0,'modified')">改后图</div></td>
                   <td>product-main-01.jpg<br /><span class="text-sm text-gray">本地上传</span></td>
                   <td><span class="badge badge-high">侵权</span></td>
                   <td>Nike</td>
@@ -505,7 +501,7 @@
                 </tr>
                 <tr>
                   <td><input type="checkbox" /></td>
-                  <td><div class="table-thumb thumb-clickable" onclick="openImagePreview('原图预览','原图预览占位')">原图</div></td>
+                  <td><div class="table-thumb thumb-clickable" onclick="openImagePreview('原图预览','原图预览占位',1,'original')">原图</div></td>
                   <td><div class="table-thumb">—</div></td>
                   <td>lookbook-02.png<br /><span class="text-sm text-gray">URL 导入</span></td>
                   <td><span class="badge badge-low">未侵权</span></td>
@@ -516,7 +512,7 @@
                 </tr>
                 <tr>
                   <td><input type="checkbox" /></td>
-                  <td><div class="table-thumb thumb-clickable" onclick="openImagePreview('原图预览','原图预览占位')">原图</div></td>
+                  <td><div class="table-thumb thumb-clickable" onclick="openImagePreview('原图预览','原图预览占位',2,'original')">原图</div></td>
                   <td><div class="table-thumb">—</div></td>
                   <td>banner-hero-03.jpg<br /><span class="text-sm text-gray">本地上传</span></td>
                   <td><span class="badge badge-high">侵权</span></td>
@@ -582,6 +578,10 @@
     <div class="modal-body">
       <div style="border-radius: 12px; border:1px solid rgba(55,65,81,.9); background: radial-gradient(circle at top,#111827,#020617 70%); height: 260px; display:flex; align-items:center; justify-content:center; font-size:12px; color:#9ca3af;">
         <span id="imageModalContent">图片预览占位</span>
+      </div>
+      <div style="margin-top:8px; display:flex; justify-content:space-between;" class="text-sm text-gray">
+        <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="prevPreview()">上一张</button>
+        <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="nextPreview()">下一张</button>
       </div>
     </div>
   </div>
@@ -702,7 +702,12 @@ function batchEdit() {
   }
 }
 
-function openImagePreview(title, content) {
+let previewRowIndex = 0;
+let previewType = 'original'; // 'original' or 'modified'
+
+function openImagePreview(title, content, rowIndex, type) {
+  previewRowIndex = typeof rowIndex === 'number' ? rowIndex : 0;
+  previewType = type || 'original';
   document.getElementById('imageModalTitle').textContent = title || '图片预览';
   document.getElementById('imageModalContent').textContent = content || '图片预览占位';
   document.getElementById('imageModal').style.display = 'flex';
@@ -710,6 +715,34 @@ function openImagePreview(title, content) {
 
 function closeImageModal() {
   document.getElementById('imageModal').style.display = 'none';
+}
+
+function updatePreviewFromRow() {
+  const rows = document.querySelectorAll('.table-wrapper tbody tr');
+  const row = rows[previewRowIndex];
+  if (!row) return;
+  const cellIndex = previewType === 'original' ? 2 : 3;
+  const thumb = row.querySelector(`td:nth-child(${cellIndex}) .table-thumb`);
+  if (!thumb) return;
+  document.getElementById('imageModalTitle').textContent =
+    previewType === 'original' ? '原图预览' : '修改后图预览';
+  document.getElementById('imageModalContent').textContent = thumb.textContent || '图片预览占位';
+}
+
+function prevPreview() {
+  const rows = document.querySelectorAll('.table-wrapper tbody tr');
+  if (previewRowIndex > 0) {
+    previewRowIndex -= 1;
+    updatePreviewFromRow();
+  }
+}
+
+function nextPreview() {
+  const rows = document.querySelectorAll('.table-wrapper tbody tr');
+  if (previewRowIndex < rows.length - 1) {
+    previewRowIndex += 1;
+    updatePreviewFromRow();
+  }
 }
 
 function openUrlTemplate() {
